@@ -7,10 +7,14 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.flightservice.dto.InventoryRequest;
 import com.flightservice.dto.SearchRequest;
+import com.flightservice.entity.Airline;
 import com.flightservice.entity.FlightInventory;
 import com.flightservice.repository.AirlineRepository;
 import com.flightservice.repository.FlightInventoryRepository;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class FlightService {
@@ -30,5 +34,17 @@ public class FlightService {
 		return inventoryRepository.findByFromPlaceIgnoreCaseAndToPlaceIgnoreCaseAndDepartureTimeBetween(
 				req.getFromPlace(), req.getToPlace(), start, end);
 	}
+	
+	@Transactional
+	public FlightInventory addInventory(InventoryRequest req) {
+		Airline airline = airlineRepository.findByName(req.getAirlineName()).orElseGet(() -> airlineRepository
+				.save(Airline.builder().name(req.getAirlineName()).logoUrl(req.getLogoUrl()).build()));
+		FlightInventory flight = FlightInventory.builder().airline(airline).fromPlace(req.getFromPlace())
+				.toPlace(req.getToPlace()).departureTime(req.getDepartureTime()).arrivalTime(req.getArrivalTime())
+				.price(req.getPrice()).totalSeats(req.getTotalSeats()).seatsAvailable(req.getTotalSeats()).build();
+		return inventoryRepository.save(flight);
+	}
+	
+	
 
 }
