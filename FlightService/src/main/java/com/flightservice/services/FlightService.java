@@ -38,12 +38,49 @@ public class FlightService {
 	@Transactional
 	public FlightInventory addInventory(InventoryRequest req) {
 		Airline airline = airlineRepository.findByName(req.getAirlineName()).orElseGet(() -> airlineRepository
-				.save(Airline.builder().name(req.getAirlineName()).logoUrl(req.getLogoUrl()).build()));
-		FlightInventory flight = FlightInventory.builder().airline(airline).fromPlace(req.getFromPlace())
-				.toPlace(req.getToPlace()).departureTime(req.getDepartureTime()).arrivalTime(req.getArrivalTime())
-				.price(req.getPrice()).totalSeats(req.getTotalSeats()).seatsAvailable(req.getTotalSeats()).build();
+				.save(Airline.builder()
+						.name(req.getAirlineName())
+						.logoUrl(req.getLogoUrl())
+						.build()));
+		FlightInventory flight = FlightInventory.builder()
+				.airline(airline)
+				.fromPlace(req.getFromPlace())
+				.toPlace(req.getToPlace())
+				.departureTime(req.getDepartureTime())
+				.arrivalTime(req.getArrivalTime())
+				.price(req.getPrice())
+				.totalSeats(req.getTotalSeats())
+				.seatsAvailable(req.getTotalSeats())
+				.build();
 		return inventoryRepository.save(flight);
 	}
+	
+    public Integer getAvailability(Long flightId) {
+        return inventoryRepository.findById(flightId)
+                .map(FlightInventory::getSeatsAvailable)
+                .orElse(null);
+    }
+
+    @Transactional
+    public boolean reserveSeats(Long flightId, int count) {
+        return inventoryRepository.findById(flightId).map(f -> {
+            if (f.getSeatsAvailable() >= count) {
+                f.setSeatsAvailable(f.getSeatsAvailable() - count);
+                inventoryRepository.save(f);
+                return true;
+            }
+            return false;
+        }).orElse(false);
+    }
+
+    @Transactional
+    public boolean releaseSeats(Long flightId, int count) {
+        return inventoryRepository.findById(flightId).map(f -> {
+            f.setSeatsAvailable(f.getSeatsAvailable() + count);
+            inventoryRepository.save(f);
+            return true;
+        }).orElse(false);
+    }
 	
 	
 
