@@ -11,9 +11,8 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1.0/flight")
+@RequestMapping("/api/flight")
 public class BookingController {
-
     private final BookingService service;
     @PostMapping("/booking")
     public ResponseEntity<Booking> book(@RequestBody BookingRequestDto req) {
